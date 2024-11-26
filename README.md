@@ -1,5 +1,16 @@
 # Compact Language Detector 2
 
+---
+将项目转为了cmake项目,可直接使用add_subdirectory()引入,并且对windows编译进行了兼容  
+
+**cmake参数:**
+- CLD2_BUILD_TEST (是否构建测试)
+
+**链接库名称:**
+- CLD2-static
+  - > add_executable(CLD2_LANG_TEST ./test/lang.cpp)  
+      target_link_libraries(CLD2_LANG_TEST PRIVATE CLD2-static)
+
 ### Summary
 Dick Sites (dsites@google.com) <br>
 2013.07.28 

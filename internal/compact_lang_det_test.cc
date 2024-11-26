@@ -23,9 +23,13 @@
 #include <stdlib.h>                 // for exit
 #include <stdio.h>
 #include <string.h>
-#include <sys/time.h>               // for gettimeofday
+//#ifdef _HOST_WINDOWS_
+//
+//#else
+//#include <sys/time.h>               // for gettimeofday
+//#endif
 #include <string>
-
+#include <chrono>
 #include "cld2tablesummary.h"
 #include "compact_lang_det_impl.h"
 #include "debug.h"
@@ -65,7 +69,10 @@ bool FLAGS_dbgscore = true;
 // Convert GetTimeOfDay output to 64-bit usec
 static inline uint64 Microseconds(const struct timeval& t) {
   // Convert to (uint64) microseconds,  not (double) seconds.
-  return t.tv_sec * 1000000ULL + t.tv_usec;
+//  return t.tv_sec * 1000000ULL + t.tv_usec;
+  auto now = std::chrono::high_resolution_clock::now();
+  auto duration = now.time_since_epoch();
+  return std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
 }
 
 #define LF 0x0a
@@ -278,7 +285,7 @@ int main(int argc, char** argv) {
   bool is_reliable;
   int usec;
   char* buffer = new char[10000000];  // Max 10MB of input for this test program
-  struct timeval news, newe;
+//  struct timeval news, newe;
 
   // Full-blown flag-bit and hints interface
   bool allow_extended_lang = true;
@@ -356,7 +363,8 @@ int main(int argc, char** argv) {
 
   CLDHints cldhints = {NULL, tldhint, enchint, langhint};
 
-  gettimeofday(&news, NULL);
+  auto news = std::chrono::steady_clock::now();
+//  gettimeofday(&news, NULL);
   for (int i = 0; i < FLAGS_repeat; ++i) {
     summary_lang = CLD2::DetectLanguageSummaryV2(
                           buffer,
@@ -373,8 +381,8 @@ int main(int argc, char** argv) {
                           &text_bytes,
                           &is_reliable);
   }
-  gettimeofday(&newe, NULL);
-
+//  gettimeofday(&newe, NULL);
+  auto newe = std::chrono::steady_clock::now();
   if (get_vector) {
     DumpResultChunkVector(stderr, buffer, &resultchunkvector);
   }
@@ -387,7 +395,8 @@ int main(int argc, char** argv) {
                   language3, percent3, text_bytes, is_reliable, n);
   }
 
-  usec = static_cast<int>(Microseconds(newe) - Microseconds(news));
+//  usec = static_cast<int>(Microseconds(newe) - Microseconds(news));
+  usec = static_cast<int>(std::chrono::duration_cast<std::chrono::microseconds>(newe - news).count());
   if (usec == 0) {usec = 1;}
   printf("  SummaryLanguage %s%s at %u of %d %uus (%d MB/sec), %s\n",
          LanguageName(summary_lang),

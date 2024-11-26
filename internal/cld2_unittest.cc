@@ -24,11 +24,11 @@
 #include <string.h>
 #include <fcntl.h>
 #include <fstream>
-#include <sys/mman.h>
+//#include <sys/mman.h>
 
 #include "cld2_dynamic_compat.h"
-#include "../public/compact_lang_det.h"
-#include "../public/encodings.h"
+#include "CLD2/compact_lang_det.h"
+#include "CLD2/encodings.h"
 #include "unittest_data.h"
 
 

@@ -18,7 +18,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/mman.h>
+//#include <sys/mman.h>
 
 #include "cld2_dynamic_data.h"
 #include "cld2_dynamic_data_extractor.h"

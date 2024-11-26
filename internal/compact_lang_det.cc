@@ -19,8 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../public/compact_lang_det.h"
-#include "../public/encodings.h"
+#include "CLD2/compact_lang_det.h"
+#include "CLD2/encodings.h"
 #include "compact_lang_det_impl.h"
 #include "integral_types.h"
 #include "lang_script.h"
