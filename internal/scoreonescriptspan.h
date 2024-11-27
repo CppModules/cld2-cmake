@@ -114,22 +114,22 @@ typedef struct {
 } ScoringTables;
 
 // Context for boosting several languages
-typedef struct {
+struct LangBoosts{
    int32 n;
    uint32 langprob[kMaxBoosts];
    int wrap(int32 n) {return n & (kMaxBoosts - 1);}
-} LangBoosts;
+};
 
-typedef struct {
+struct PerScriptLangBoosts {
    LangBoosts latn;
    LangBoosts othr;
-} PerScriptLangBoosts;
+} ;
 
 
 
 // ScoringContext carries state across scriptspans
 // ScoringContext also has read-only scoring tables mapping grams to qprobs
-typedef struct {
+struct ScoringContext {
   FILE* debug_file;                   // Non-NULL if debug output wanted
   bool flags_cld2_score_as_quads;
   bool flags_cld2_html;
@@ -155,7 +155,7 @@ typedef struct {
     memset(&langprior_whack, 0, sizeof(langprior_whack));
     memset(&distinct_boost, 0, sizeof(distinct_boost));
   };
-} ScoringContext;
+} ;
 
 
 
@@ -183,7 +183,7 @@ typedef struct {
 } LangprobHit;
 
 // Holds arrays of scoring-table lookup hits for (part of) a scriptspan
-typedef struct {
+struct ScoringHitBuffer {
   ULScript ulscript;        // langprobs below are with respect to this script
   int maxscoringhits;       // determines size of arrays below
   int next_base;            // First unused entry in each array
@@ -223,21 +223,21 @@ typedef struct {
     chunk_start[0] = 0;
     chunk_offset[0] = 0;
   };
-} ScoringHitBuffer;
+};
 
 // TODO: Explain here why we need both ChunkSpan and ChunkSummary
-typedef struct {
+struct ChunkSpan{
   int chunk_base;       // Subscript of first hitbuffer.base[] in chunk
   int chunk_delta;      // Subscript of first hitbuffer.delta[]
   int chunk_distinct;   // Subscript of first hitbuffer.distinct[]
   int base_len;         // Number of hitbuffer.base[] in chunk
   int delta_len;        // Number of hitbuffer.delta[] in chunk
   int distinct_len;     // Number of hitbuffer.distinct[] in chunk
-} ChunkSpan;
+} ;
 
 
 // Packed into 20 bytes for space
-typedef struct {
+struct ChunkSummary{
   uint16 offset;              // Text offset within current scriptspan.text
   uint16 chunk_start;         // Scoring subscr within hitbuffer->linear[]
   uint16 lang1;               // Top lang, mapped to full Language
@@ -249,7 +249,7 @@ typedef struct {
   uint16 ulscript;            // ULScript of chunk
   uint8 reliability_delta;    // Reliability 0..100, delta top:second scores
   uint8 reliability_score;    // Reliability 0..100, top:expected score
-} ChunkSummary;
+} ;
 
 
 // We buffer up ~50 chunk summaries, corresponding to chunks of 20 quads in a
@@ -258,10 +258,10 @@ typedef struct {
 // all into the document score
 //
 // About 50 * 20 = 1000 bytes. OK for stack alloc
-typedef struct {
+struct SummaryBuffer{
   int n;
   ChunkSummary chunksummary[kMaxSummaries + 1];
-} SummaryBuffer;
+} ;
 
 // End private
 
