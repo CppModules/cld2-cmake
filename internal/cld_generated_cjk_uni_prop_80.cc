@@ -27,6 +27,7 @@
 //  relative +/-127 from previous state.
 
 #include "utf8statetable.h"
+#include <cstdint>
 
 namespace CLD2 {
 
