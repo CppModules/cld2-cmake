@@ -194,84 +194,84 @@ int BytesPer1KB(int i, int j) {
    return bytes_per_1kb;
 }
 
-int main(int argc, char *argv[]) {
-  Language cur_lang = UNKNOWN_LANGUAGE;
-  ULScript cur_ulscript = ULScript_Common;
-  double total_score_cur_lang = 0.0;
-  double total_bytes_cur_lang = 0.0;
-  double total_bad_bytes_cur_lang = 0.0;
-  memset(bytes, 0, sizeof(bytes));
-  memset(scores, 0, sizeof(bytes));
-
-  char buffer[kMaxBuffer];
-  int buffer_length;
-  const char* filename = NULL;
-  FILE* infile = stdin;
-  for (int i = 1; i < argc; ++i) {
-     if (argv[i][0] != '-') {
-        filename = argv[i];
-     }
-  }
-
-  if (filename != NULL) {
-     infile = fopen(filename, "r");
-     if (infile == NULL) {
-        fprintf(stderr, "%s did not open\n", filename);
-        return 0;
-     }
-  }
-
-  while (ReadLine(infile, buffer, kMaxBuffer)) {
-    if (IsComment(buffer)) {continue;}
-
-    buffer_length = strlen(buffer);
-    int bytes;
-    double score_per_1kb;
-    Language toplang;
-    Language target_lang;
-    ULScript target_ulscript;
-
-    string src(buffer, buffer_length);
-    string tld("");
-    int pos = GetTextBeginPos(src);
-    GetLangScript(src, UNKNOWN_LANGUAGE, ULScript_Common,
-                   &target_lang, &target_ulscript, &tld);
-    if ((cur_lang != target_lang) || (cur_ulscript != target_ulscript)) {
-      Flush(cur_lang, cur_ulscript, total_score_cur_lang,
-            total_bytes_cur_lang, total_bad_bytes_cur_lang);
-      cur_lang = target_lang;
-      cur_ulscript = target_ulscript;
-      total_score_cur_lang = 0.0;
-      total_bytes_cur_lang = 0.0;
-      total_bad_bytes_cur_lang = 0.0;
-    }
-
-    toplang = ScoreOneLine(&src[pos], src.size() - pos, &bytes, &score_per_1kb);
-
-    fprintf(stdout, "%s%c %d %4.1f %s\n",
-            LanguageCode(toplang),
-            (toplang == target_lang) ? ' ' : '*',
-            bytes, score_per_1kb, buffer);
-    // Only count when detected lang matches the claimed target lang
-    if (toplang == target_lang) {
-      total_bytes_cur_lang += bytes;
-      total_score_cur_lang += (score_per_1kb * bytes) / 1024.0;
-    } else {
-      total_bad_bytes_cur_lang += bytes;
-    }
-  }
-  Flush(cur_lang, cur_ulscript, total_score_cur_lang,
-        total_bytes_cur_lang, total_bad_bytes_cur_lang);
-
-  for (int i = 0; i < NUM_LANGUAGES; ++i) {
-     Language ilang = static_cast<Language>(i);
-     fprintf(stdout, "  {%4d, %4d, %4d, %4d},  // %d %s %s\n",
-             BytesPer1KB(i, 0), BytesPer1KB(i, 1),
-             BytesPer1KB(i, 2), BytesPer1KB(i, 3),
-             i, LanguageName(ilang), LanguageCode(ilang));
-  }
-
-  if (infile != stdin) {
-     fclose(infile);
-  }
-}
+//int main(int argc, char *argv[]) {
+//  Language cur_lang = UNKNOWN_LANGUAGE;
+//  ULScript cur_ulscript = ULScript_Common;
+//  double total_score_cur_lang = 0.0;
+//  double total_bytes_cur_lang = 0.0;
+//  double total_bad_bytes_cur_lang = 0.0;
+//  memset(bytes, 0, sizeof(bytes));
+//  memset(scores, 0, sizeof(bytes));
+//
+//  char buffer[kMaxBuffer];
+//  int buffer_length;
+//  const char* filename = NULL;
+//  FILE* infile = stdin;
+//  for (int i = 1; i < argc; ++i) {
+//     if (argv[i][0] != '-') {
+//        filename = argv[i];
+//     }
+//  }
+//
+//  if (filename != NULL) {
+//     infile = fopen(filename, "r");
+//     if (infile == NULL) {
+//        fprintf(stderr, "%s did not open\n", filename);
+//        return 0;
+//     }
+//  }
+//
+//  while (ReadLine(infile, buffer, kMaxBuffer)) {
+//    if (IsComment(buffer)) {continue;}
+//
+//    buffer_length = strlen(buffer);
+//    int bytes;
+//    double score_per_1kb;
+//    Language toplang;
+//    Language target_lang;
+//    ULScript target_ulscript;
+//
+//    string src(buffer, buffer_length);
+//    string tld("");
+//    int pos = GetTextBeginPos(src);
+//    GetLangScript(src, UNKNOWN_LANGUAGE, ULScript_Common,
+//                   &target_lang, &target_ulscript, &tld);
+//    if ((cur_lang != target_lang) || (cur_ulscript != target_ulscript)) {
+//      Flush(cur_lang, cur_ulscript, total_score_cur_lang,
+//            total_bytes_cur_lang, total_bad_bytes_cur_lang);
+//      cur_lang = target_lang;
+//      cur_ulscript = target_ulscript;
+//      total_score_cur_lang = 0.0;
+//      total_bytes_cur_lang = 0.0;
+//      total_bad_bytes_cur_lang = 0.0;
+//    }
+//
+//    toplang = ScoreOneLine(&src[pos], src.size() - pos, &bytes, &score_per_1kb);
+//
+//    fprintf(stdout, "%s%c %d %4.1f %s\n",
+//            LanguageCode(toplang),
+//            (toplang == target_lang) ? ' ' : '*',
+//            bytes, score_per_1kb, buffer);
+//    // Only count when detected lang matches the claimed target lang
+//    if (toplang == target_lang) {
+//      total_bytes_cur_lang += bytes;
+//      total_score_cur_lang += (score_per_1kb * bytes) / 1024.0;
+//    } else {
+//      total_bad_bytes_cur_lang += bytes;
+//    }
+//  }
+//  Flush(cur_lang, cur_ulscript, total_score_cur_lang,
+//        total_bytes_cur_lang, total_bad_bytes_cur_lang);
+//
+//  for (int i = 0; i < NUM_LANGUAGES; ++i) {
+//     Language ilang = static_cast<Language>(i);
+//     fprintf(stdout, "  {%4d, %4d, %4d, %4d},  // %d %s %s\n",
+//             BytesPer1KB(i, 0), BytesPer1KB(i, 1),
+//             BytesPer1KB(i, 2), BytesPer1KB(i, 3),
+//             i, LanguageName(ilang), LanguageCode(ilang));
+//  }
+//
+//  if (infile != stdin) {
+//     fclose(infile);
+//  }
+//}

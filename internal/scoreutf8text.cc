@@ -64,91 +64,91 @@ sort by script, and within script, by per_M and near diagonal
 #define CR 0x0d
 const int kMaxBuffer = 5 * 1024;
 
-bool ReadLine(FILE* infile, char* buffer, size_t maxlen) {
-  char* p = fgets(buffer, maxlen, infile);
+bool ReadLine(FILE *infile, char *buffer, size_t maxlen) {
+  char *p = fgets(buffer, maxlen, infile);
   if (p == NULL) {
     return false;
   }
   int len = strlen(buffer);
 
   // trim CR LF
-  if (buffer[len-1] == LF) {buffer[--len] = '\0';}
-  if (buffer[len-1] == CR) {buffer[--len] = '\0';}
+  if (buffer[len - 1] == LF) { buffer[--len] = '\0'; }
+  if (buffer[len - 1] == CR) { buffer[--len] = '\0'; }
   return true;
 }
 
-bool IsComment(char* buffer) {
+bool IsComment(char *buffer) {
   int len = strlen(buffer);
-  if (len == 0) {return true;}
-  if (buffer[0] == '#') {return true;}
-  if (buffer[0] == ' ') {return true;}    // Any leading space is comment
-  if ((len >= 5) && (memcmp(buffer, "BOGUS", 5) == 0)) {return true;}
+  if (len == 0) { return true; }
+  if (buffer[0] == '#') { return true; }
+  if (buffer[0] == ' ') { return true; }    // Any leading space is comment
+  if ((len >= 5) && (memcmp(buffer, "BOGUS", 5) == 0)) { return true; }
   return false;
 }
 
 
 // Skips over xxxxx_ where _ is one or more spaces/tabs
 // Returns string::npos if no more fields
-int SkipOneField(const string& src, int pos) {
-  if (pos == string::npos) {return pos;}
+int SkipOneField(const string &src, int pos) {
+  if (pos == string::npos) { return pos; }
 
   int lpos = pos;
   lpos = src.find_first_of(" \t", lpos);
-  if (lpos == string::npos) {return lpos;}
+  if (lpos == string::npos) { return lpos; }
   lpos = src.find_first_not_of(" \t", lpos);
-  if (lpos == string::npos) {return lpos;}
+  if (lpos == string::npos) { return lpos; }
   return lpos;
 }
 
 // Return language and script from parsed line
-void GetStatedLangScript(const string& src, string* lang_script, string* tld) {
+void GetStatedLangScript(const string &src, string *lang_script, string *tld) {
   *lang_script = "";
   *tld = "";
   int pos = 0;
   int pos2 = 0;
-  if (src.substr(0,7) == "SAMPLE ") {
+  if (src.substr(0, 7) == "SAMPLE ") {
     // SAMPLE ll-Ssss
     pos = SkipOneField(src, pos);
-  } else if (src.substr(0,5) == "SAMP ") {
+  } else if (src.substr(0, 5) == "SAMP ") {
     // SAMP ll-Ssss /tld2.tld/
     pos = SkipOneField(src, pos);
     pos2 = SkipOneField(src, pos);
-  } else if (src.substr(0,5) == "Samp ") {
+  } else if (src.substr(0, 5) == "Samp ") {
     // Samp ll-Ssss /tld2.tld/
     pos = SkipOneField(src, pos);
     pos2 = SkipOneField(src, pos);
   }
-  if (pos == 0) {return;}
-  if (pos == string::npos) {return;}
+  if (pos == 0) { return; }
+  if (pos == string::npos) { return; }
 
   // Pos is at the first letter of language-script combination
   int end = src.find_first_of(" \t", pos);    // find end of lang-script
-  if (end == string::npos) {return;}
+  if (end == string::npos) { return; }
   *lang_script = src.substr(pos, end - pos);
 
   // Pos2 is 0 or at the first letter of the tld string
-  if (pos2 == 0) {return;}
-  if (pos2 == string::npos) {return;}
+  if (pos2 == 0) { return; }
+  if (pos2 == string::npos) { return; }
   end = src.find_first_of(" \t", pos2);
-  if (end == string::npos) {return;}
+  if (end == string::npos) { return; }
   *tld = src.substr(pos2, end - pos2);
 }
 
 // Return position of start of text
-int GetTextBeginPos(const string& src) {
+int GetTextBeginPos(const string &src) {
   int pos = 0;
-  if (src.size() < 8) {return pos;}
+  if (src.size() < 8) { return pos; }
 
-  if (src.substr(0,7) == "SAMPLE ") {
+  if (src.substr(0, 7) == "SAMPLE ") {
     // Skip SAMPLE ll-Ssss
     pos = SkipOneField(src, pos);
     pos = SkipOneField(src, pos);
-  } else if (src.substr(0,5) == "SAMP ") {
+  } else if (src.substr(0, 5) == "SAMP ") {
     // Skip SAMP ll-Ssss /tld2.tld/
     pos = SkipOneField(src, pos);
     pos = SkipOneField(src, pos);
     pos = SkipOneField(src, pos);
-  } else if (src.substr(0,5) == "Samp ") {
+  } else if (src.substr(0, 5) == "Samp ") {
     // Skip Samp ll-Ssss /tld2.tld/
     pos = SkipOneField(src, pos);
     pos = SkipOneField(src, pos);
@@ -158,49 +158,49 @@ int GetTextBeginPos(const string& src) {
 }
 
 
-bool CarefulMatch(const char* in_langscript,
+bool CarefulMatch(const char *in_langscript,
                   Language in_lang, ULScript in_lscript,
                   Language cld_lang, ULScript cld_lscript) {
   bool easy_match = ((in_lang == cld_lang) & (in_lscript == cld_lscript));
-  if (easy_match) {return true;}
+  if (easy_match) { return true; }
 
   // Unrecognized list, matching un-Xxxx
   if ((cld_lang == UNKNOWN_LANGUAGE) && (in_lscript == cld_lscript)) {
-    if (strcmp(in_langscript, "az-Arab") == 0) {return true;}
-    if (strcmp(in_langscript, "az-Cyrl") == 0) {return true;}
-    if (strcmp(in_langscript, "kk-Latn") == 0) {return true;}
-    if (strcmp(in_langscript, "ku-Latn") == 0) {return true;}
-    if (strcmp(in_langscript, "my-Latn") == 0) {return true;}
-    if (strcmp(in_langscript, "ru-Latn") == 0) {return true;}
-    if (strcmp(in_langscript, "tg-Arab") == 0) {return true;}
-    if (strcmp(in_langscript, "ug-Latn") == 0) {return true;}
-    if (strcmp(in_langscript, "za-Hani") == 0) {return true;}
+    if (strcmp(in_langscript, "az-Arab") == 0) { return true; }
+    if (strcmp(in_langscript, "az-Cyrl") == 0) { return true; }
+    if (strcmp(in_langscript, "kk-Latn") == 0) { return true; }
+    if (strcmp(in_langscript, "ku-Latn") == 0) { return true; }
+    if (strcmp(in_langscript, "my-Latn") == 0) { return true; }
+    if (strcmp(in_langscript, "ru-Latn") == 0) { return true; }
+    if (strcmp(in_langscript, "tg-Arab") == 0) { return true; }
+    if (strcmp(in_langscript, "ug-Latn") == 0) { return true; }
+    if (strcmp(in_langscript, "za-Hani") == 0) { return true; }
   }
 
   // bs/me => sr/hr
   if ((cld_lang == CROATIAN) && (cld_lscript == ULScript_Latin)) {
-    if (strcmp(in_langscript, "bs-Latn") == 0) {return true;}
-    if (strcmp(in_langscript, "sr-ME-Latn") == 0) {return true;}
+    if (strcmp(in_langscript, "bs-Latn") == 0) { return true; }
+    if (strcmp(in_langscript, "sr-ME-Latn") == 0) { return true; }
   }
   if ((cld_lang == SERBIAN) && (cld_lscript == ULScript_Cyrillic)) {
-    if (strcmp(in_langscript, "bs-Cyrl") == 0) {return true;}
-    if (strcmp(in_langscript, "sr-ME-Cyrl") == 0) {return true;}
+    if (strcmp(in_langscript, "bs-Cyrl") == 0) { return true; }
+    if (strcmp(in_langscript, "sr-ME-Cyrl") == 0) { return true; }
   }
 
   // Twi => Akan
   if ((cld_lang == AKAN) && (cld_lscript == ULScript_Latin)) {
-    if (strcmp(in_langscript, "tw-Latn") == 0) {return true;}
+    if (strcmp(in_langscript, "tw-Latn") == 0) { return true; }
   }
 
   // za-Hani
   if ((cld_lang == CHINESE) && (cld_lscript == ULScript_Hani)) {
-    if (strcmp(in_langscript, "za-Hani") == 0) {return true;}
+    if (strcmp(in_langscript, "za-Hani") == 0) { return true; }
   }
 
   // zzb, zze, zzh fake languages
-  if (strcmp(in_langscript, "zzb-Latn") == 0) {return true;}
-  if (strcmp(in_langscript, "zze-Latn") == 0) {return true;}
-  if (strcmp(in_langscript, "zzh-Latn") == 0) {return true;}
+  if (strcmp(in_langscript, "zzb-Latn") == 0) { return true; }
+  if (strcmp(in_langscript, "zze-Latn") == 0) { return true; }
+  if (strcmp(in_langscript, "zzh-Latn") == 0) { return true; }
 
 
   return false;
@@ -247,7 +247,7 @@ void InitResult() {
 #endif
 }
 
-void RecordCLDResult(const char* buffer, const char* in_langscript,
+void RecordCLDResult(const char *buffer, const char *in_langscript,
                      Language in_lang, ULScript in_lscript,
                      Language cld_lang, ULScript cld_lscript) {
 
@@ -377,21 +377,21 @@ void FinishResult() {
 }
 
 bool SkipMe(char c) {
-  if (static_cast<uint8>(c) <= '9') {return true;}
+  if (static_cast<uint8>(c) <= '9') { return true; }
   return false;
 }
 
 // Remove any trailing digits/spaces (possible mapreduce counts)
 // Return length
-int Trim(char* buffer) {
+int Trim(char *buffer) {
   int buffer_len = strlen(buffer);
-  while (SkipMe(buffer[buffer_len - 1])) {--buffer_len;}
+  while (SkipMe(buffer[buffer_len - 1])) { --buffer_len; }
   buffer[buffer_len] = '\0';
   return buffer_len;
 }
 
-void LangDetLinesOfFile(int flags, bool get_vector, const char* fname) {
-  FILE* fin = fopen(fname, "rb");
+void LangDetLinesOfFile(int flags, bool get_vector, const char *fname) {
+  FILE *fin = fopen(fname, "rb");
   if (fin == NULL) {
     fprintf(stderr, "Did not open %s\n", fname);
     return;
@@ -401,7 +401,7 @@ void LangDetLinesOfFile(int flags, bool get_vector, const char* fname) {
   // Samp af-Latn /afr/ word tot skuldig bevind volgens die wet, in...
   char buffer[kMaxBuffer];
   while (ReadLine(fin, buffer, kMaxBuffer)) {
-    if (IsComment(buffer)) {continue;}
+    if (IsComment(buffer)) { continue; }
 
     int buffer_len = Trim(buffer);
 
@@ -416,16 +416,16 @@ void LangDetLinesOfFile(int flags, bool get_vector, const char* fname) {
 
     // Get Text; skip over any prefix fields
     int pos = GetTextBeginPos(buffer_str);
-    if (pos == string::npos) {continue;}
+    if (pos == string::npos) { continue; }
 
-    const char* src = buffer_str.data() + pos;
+    const char *src = buffer_str.data() + pos;
     int src_len = buffer_str.size() - pos;
 
-    if (src_len < FLAGS_minsize) {continue;}    // Skip if too short
+    if (src_len < FLAGS_minsize) { continue; }    // Skip if too short
 
     // Detect language in one line of UTF-8
     bool is_plain_text = false;
-    const char* tldhint = "";
+    const char *tldhint = "";
     Encoding enchint = UNKNOWN_ENCODING;
     Language langhint = UNKNOWN_LANGUAGE;
     // Full-blown flag-bit and hints interface
@@ -450,18 +450,18 @@ void LangDetLinesOfFile(int flags, bool get_vector, const char* fname) {
     CLDHints cldhints = {NULL, tldhint, enchint, langhint};
 
     summary_lang = DetectLanguageSummaryV2(
-                      src, src_len,
-                      is_plain_text,
-                      &cldhints,
-                      allow_extended_lang,
-                      flags,
-                      plus_one,
-                      language3,
-                      percent3,
-                      normalized_score3,
-                      get_vector ? &resultchunkvector : NULL,
-                      &text_bytes,
-                      &is_reliable);
+      src, src_len,
+      is_plain_text,
+      &cldhints,
+      allow_extended_lang,
+      flags,
+      plus_one,
+      language3,
+      percent3,
+      normalized_score3,
+      get_vector ? &resultchunkvector : NULL,
+      &text_bytes,
+      &is_reliable);
 
 #if 0
     if (FLAGS_noext) {
@@ -486,7 +486,7 @@ void LangDetLinesOfFile(int flags, bool get_vector, const char* fname) {
       DumpResultChunkVector(stderr, src, &resultchunkvector);
     }
 
-    if (!is_reliable) {summary_lang = UNKNOWN_LANGUAGE;}
+    if (!is_reliable) { summary_lang = UNKNOWN_LANGUAGE; }
 
     RecordCLDResult(buffer, lang_script.c_str(),
                     in_lang, in_lscript,
@@ -497,51 +497,52 @@ void LangDetLinesOfFile(int flags, bool get_vector, const char* fname) {
 }
 
 
-
-
-int main (int argc, char *argv[])
-{
-  int flags = 0;
-  bool get_vector = false;
-
-  for (int i = 1; i < argc; ++i) {
-    if (strcmp(argv[i], "--scoreasquads") == 0) {flags |= kCLDFlagScoreAsQuads;}
-    if (strcmp(argv[i], "--html") == 0) {flags |= kCLDFlagHtml;}
-    if (strcmp(argv[i], "--cr") == 0) {flags |= kCLDFlagCr;}
-    if (strcmp(argv[i], "--verbose") == 0) {flags |= kCLDFlagVerbose;}
-    if (strcmp(argv[i], "--vector") == 0) {get_vector = true;}
-  }
-
-  if (FLAGS_cld2_html) {
-    // Begin HTML file
-    fprintf(stderr, "<html><meta charset=\"UTF-8\"><body>\n");
-    fprintf(stderr, "<style media=\"print\" type=\"text/css\"> "
-                    ":root { -webkit-print-color-adjust: exact; } </style>\n");
-    fprintf(stderr, "<span style=\"font-size: 7pt\">\n");
-  }
-
-
-  InitResult();
-  for (int i = 1; i < argc; ++i) {
-    if (argv[i][0] != '-') {
-      const char* fname = argv[i];
-      fprintf(stderr, "file = %s<br><br>\n", fname ? fname : "stdin");
-      LangDetLinesOfFile(flags, get_vector, fname);
-    }
-  }
-  FinishResult();
-
-  if (FLAGS_cld2_html) {
-    fprintf(stderr, "\n</span></body></html><br>");
-  }
-
-  return 0;
+//
+//
+//int main (int argc, char *argv[])
+//{
+//  int flags = 0;
+//  bool get_vector = false;
+//
+//  for (int i = 1; i < argc; ++i) {
+//    if (strcmp(argv[i], "--scoreasquads") == 0) {flags |= kCLDFlagScoreAsQuads;}
+//    if (strcmp(argv[i], "--html") == 0) {flags |= kCLDFlagHtml;}
+//    if (strcmp(argv[i], "--cr") == 0) {flags |= kCLDFlagCr;}
+//    if (strcmp(argv[i], "--verbose") == 0) {flags |= kCLDFlagVerbose;}
+//    if (strcmp(argv[i], "--vector") == 0) {get_vector = true;}
+//  }
+//
+//  if (FLAGS_cld2_html) {
+//    // Begin HTML file
+//    fprintf(stderr, "<html><meta charset=\"UTF-8\"><body>\n");
+//    fprintf(stderr, "<style media=\"print\" type=\"text/css\"> "
+//                    ":root { -webkit-print-color-adjust: exact; } </style>\n");
+//    fprintf(stderr, "<span style=\"font-size: 7pt\">\n");
+//  }
+//
+//
+//  InitResult();
+//  for (int i = 1; i < argc; ++i) {
+//    if (argv[i][0] != '-') {
+//      const char* fname = argv[i];
+//      fprintf(stderr, "file = %s<br><br>\n", fname ? fname : "stdin");
+//      LangDetLinesOfFile(flags, get_vector, fname);
+//    }
+//  }
+//  FinishResult();
+//
+//  if (FLAGS_cld2_html) {
+//    fprintf(stderr, "\n</span></body></html><br>");
+//  }
+//
+//  return 0;
+//}
+//
+//}       // End namespace CLD2
+//
+//
+//int main(int argc, char *argv[]) {
+//  return CLD2::main(argc, argv);
+//}
+//
 }
-
-}       // End namespace CLD2
-
-
-int main(int argc, char *argv[]) {
-  return CLD2::main(argc, argv);
-}
-

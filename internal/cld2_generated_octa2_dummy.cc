@@ -16,13 +16,15 @@
 // Degenerate CLD2 scoring lookup table, for use as placeholder
 //
 #include "cld2tablesummary.h"
+#include <cstdint>
+#include <limits>
 
 namespace CLD2 {
 
 static const int kDummyTableBuildDate = 20130101;    // yyyymmdd
 static const int kDummyTableSizeOne = 1;    // One-langprob Bucket count
 static const int kDummyTableSize = 1;       // Total Bucket count
-static const int kDummyTableKeyMask = 0xffffffff;    // Mask hash key
+static const uint32_t kDummyTableKeyMask = -1;    // Mask hash key
 static const char* const kDummyTableRecognizedLangScripts = "";
 
 // Empty table
@@ -36,7 +38,7 @@ static const uint32 kDummyTableInd[1] = {
   // [0000]
   0x00000000, };
 
-extern const CLD2TableSummary kOcta2_obj = {
+extern const CLD2TableSummary kOcta2_obj= {
   kDummyTable,
   kDummyTableInd,
   kDummyTableSizeOne,
